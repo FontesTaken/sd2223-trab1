@@ -1,4 +1,4 @@
-package sd2223.trab1.server;
+package sd2223.trab1.server.rest;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -8,12 +8,11 @@ import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import sd2223.trab1.api.Discovery;
-import sd2223.trab1.server.resources.UsersResource;
 
 
-public class RESTUsersServer {
+public class RestUsersServer {
 
-	private static Logger Log = Logger.getLogger(RESTUsersServer.class.getName());
+	private static Logger Log = Logger.getLogger(RestUsersServer.class.getName());
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -27,7 +26,7 @@ public class RESTUsersServer {
 		try {
 
 			ResourceConfig config = new ResourceConfig();
-			config.register(UsersResource.class);
+			config.register(RestUserResource.class);
 			// config.register(CustomLoggingFilter.class);
 
 			String ip = InetAddress.getLocalHost().getHostAddress();

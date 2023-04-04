@@ -1,6 +1,8 @@
-package sd2223.trab1.api;
+package sd2223.trab1.api.java;
 
 import java.util.List;
+
+import sd2223.trab1.api.User;
 
 public interface Users {
 

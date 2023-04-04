@@ -1,4 +1,4 @@
-package sd2223.trab1.server.resources;
+package sd2223.trab1.server.rest;
 
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
@@ -16,7 +16,7 @@ public class FeedsResource implements FeedsService {
 
 	private final Map<String, Map<Long,String>> subs = new ConcurrentHashMap<>();
     private final Map<String, Map<Long,Message>> personalFeeds = new ConcurrentHashMap<>();
-    private final UsersResource ur = new UsersResource();;
+    private final RestUserResource ur = new RestUserResource();;
 
     private static Logger Log = Logger.getLogger(FeedsResource.class.getName());
 

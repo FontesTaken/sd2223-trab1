@@ -1,4 +1,11 @@
-package sd2223.trab1.server.resources;
+package sd2223.trab1.server.java;
+
+import static sd2223.trab1.api.java.Result.error;
+import static sd2223.trab1.api.java.Result.ok;
+import static sd2223.trab1.api.java.Result.ErrorCode.BAD_REQUEST;
+import static sd2223.trab1.api.java.Result.ErrorCode.CONFLICT;
+import static sd2223.trab1.api.java.Result.ErrorCode.FORBIDDEN;
+import static sd2223.trab1.api.java.Result.ErrorCode.NOT_FOUND;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -6,22 +13,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import static sd2223.trab1.api.Result.error;
-import static sd2223.trab1.api.Result.ok;
-import static sd2223.trab1.api.Result.ErrorCode.BAD_REQUEST;
-import static sd2223.trab1.api.Result.ErrorCode.CONFLICT;
-import static sd2223.trab1.api.Result.ErrorCode.FORBIDDEN;
-import static sd2223.trab1.api.Result.ErrorCode.NOT_FOUND;
-import sd2223.trab1.api.Result;
 import sd2223.trab1.api.User;
-import sd2223.trab1.api.Users;
+import sd2223.trab1.api.java.Result;
+import sd2223.trab1.api.java.Users;
+import sd2223.trab1.server.rest.RestUserResource;
 
 public class JavaUsers implements Users {
 	
 
 	private final Map<String, User> users = new ConcurrentHashMap<>();
 
-	private static Logger Log = Logger.getLogger(UsersResource.class.getName());
+	private static Logger Log = Logger.getLogger(RestUserResource.class.getName());
 
 	public JavaUsers() {
 		
