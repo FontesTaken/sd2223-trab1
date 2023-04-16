@@ -4,17 +4,20 @@ import static sd2223.trab1.api.java.Result.error;
 import static sd2223.trab1.api.java.Result.ok;
 
 import java.net.URI;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
+import sd2223.trab1.api.User;
 import sd2223.trab1.api.java.Result;
 import sd2223.trab1.api.java.Result.ErrorCode;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
@@ -55,6 +58,20 @@ public class RestClient {
 		return Result.error(ErrorCode.TIMEOUT);
 	}
 
+	protected <T> Result<T> toJavaResult(Response r, GenericType<T> genericType) {
+		try {
+			var status = r.getStatusInfo().toEnum();
+			if (status == Status.OK && r.hasEntity())
+				return ok(r.readEntity(genericType));
+			else 
+				if( status == Status.NO_CONTENT) return ok();
+			
+			return error(getErrorCodeFrom(status.getStatusCode()));
+		} finally {
+			r.close();
+		}
+	}
+	
 	protected <T> Result<T> toJavaResult(Response r, Class<T> entityType) {
 		try {
 			var status = r.getStatusInfo().toEnum();
@@ -95,4 +112,6 @@ public class RestClient {
 			e.printStackTrace();
 		}
 	}
+
+	
 }

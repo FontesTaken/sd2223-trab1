@@ -9,23 +9,23 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import sd2223.trab1.api.Discovery;
 
-public class RestUsersServer {
-	private static Logger Log = Logger.getLogger(RestUsersServer.class.getName());
+public class RestFeedsServer {
+	private static Logger Log = Logger.getLogger(RestFeedsServer.class.getName());
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
 	}
 
-	public static final int PORT = 3456;
+	public static final int PORT = 4567;
 	private static final String SERVER_URI_FMT = "http://%s:%s/rest";
 
 	public static void main(String[] args) {
 		try {
 
-			String service = "users." + args[0];
+			String service = "feeds." + args[0];
 
 			ResourceConfig config = new ResourceConfig();
-			config.register(RestUserResource.class);
+			config.register(RestFeedsResource.class);
 
 			String ip = InetAddress.getLocalHost().getHostAddress();
 			String serverURI = String.format(SERVER_URI_FMT, ip, PORT);

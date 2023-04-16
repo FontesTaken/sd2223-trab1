@@ -8,6 +8,7 @@ import sd2223.trab1.api.java.Result;
 import sd2223.trab1.api.java.Users;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import sd2223.trab1.api.User;
@@ -69,9 +70,8 @@ public class RestUsersClient extends RestClient implements Users {
 		Response r = target.path("/").queryParam( UsersService.QUERY, pattern).request()
 				.accept(MediaType.APPLICATION_JSON)
 				.get();
-		List<User> userList = new ArrayList<>();
-		Class<List<User>> listClass = (Class<List<User>>)(Class<?>)userList.getClass();
-		return super.toJavaResult(r, listClass);
+
+		return super.toJavaResult(r, new GenericType<List<User>>() {});
 	}
 	
 	@Override
