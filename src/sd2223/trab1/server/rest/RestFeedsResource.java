@@ -11,8 +11,8 @@ public class RestFeedsResource extends RestResource implements FeedsService {
 
     final Feeds impl;
 
-    public RestFeedsResource() {
-        this.impl = new JavaFeeds();
+    public RestFeedsResource(String domain, long serverId) {
+        this.impl = new JavaFeeds(domain, serverId);
     }
 
     @Override
@@ -49,4 +49,15 @@ public class RestFeedsResource extends RestResource implements FeedsService {
     public List<String> listSubs(String user) {
         return super.fromJavaResult(impl.listSubs(user));
     }
+
+	@Override
+	public void deleteFeed(String user) {
+		super.fromJavaResult(impl.deleteFeed(user));
+	}
+
+	@Override
+	public List<Message> getMessagesFromRemote(String user, String domain, long time) {
+		return super.fromJavaResult(impl.getMessagesFromRemote(user, domain, time));
+
+	}
 }

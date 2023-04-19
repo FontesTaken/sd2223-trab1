@@ -1,23 +1,12 @@
 package sd2223.trab1.api;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.net.NetworkInterface;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
- * <p>
- * A class interface to perform service discovery based on periodic
- * announcements over multicast communication.
- * </p>
+ * <p>A class interface to perform service discovery based on periodic 
+ * announcements over multicast communication.</p>
  * 
  */
 
@@ -25,25 +14,22 @@ public interface Discovery {
 
 	/**
 	 * Used to announce the URI of the given service name.
-	 * 
 	 * @param serviceName - the name of the service
-	 * @param serviceURI  - the uri of the service
+	 * @param serviceURI - the uri of the service
 	 */
-	public void announce(String serviceName, String serviceURI);
+	public void announce(String domainName, String serviceName, String serviceURI);
 
 	/**
 	 * Get discovered URIs for a given service name
-	 * 
 	 * @param serviceName - name of the service
-	 * @param minReplies  - minimum number of requested URIs. Blocks until the
-	 *                    number is satisfied.
+	 * @param domain - domain of the server
 	 * @return array with the discovered URIs for the given service name.
 	 */
-	public URI[] knownUrisOf(String serviceName, int minReplies);
+	public URI knownUrisOf(String serviceName, String domain);
+
 
 	/**
 	 * Get the instance of the Discovery service
-	 * 
 	 * @return the singleton instance of the Discovery service
 	 */
 	public static Discovery getInstance() {
@@ -55,8 +41,7 @@ public interface Discovery {
  * Implementation of the multicast discovery service
  */
 class DiscoveryImpl implements Discovery {
-
-	private static Logger Log = Logger.getLogger(Discovery.class.getName());
+	private static final Logger Log = Logger.getLogger(Discovery.class.getName());
 
 	// The pre-aggreed multicast endpoint assigned to perform discovery.
 
@@ -64,7 +49,7 @@ class DiscoveryImpl implements Discovery {
 	static final int DISCOVERY_ANNOUNCE_PERIOD = 1000;
 
 	// Replace with appropriate values...
-	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 8050);
+	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 2266);
 
 	// Used separate the two fields that make up a service announcement.
 	private static final String DELIMITER = "\t";
@@ -73,7 +58,7 @@ class DiscoveryImpl implements Discovery {
 
 	private static Discovery singleton;
 
-	private Map<String, List<URI>> listOfUris;
+	private final ConcurrentHashMap<String, URI> serviceMap;
 
 	synchronized static Discovery getInstance() {
 		if (singleton == null) {
@@ -83,18 +68,16 @@ class DiscoveryImpl implements Discovery {
 	}
 
 	private DiscoveryImpl() {
+		serviceMap = new ConcurrentHashMap<>();
 		this.startListener();
 	}
 
 	@Override
-	public void announce(String serviceName, String serviceURI) {
+	public void announce(String domainName, String serviceName, String serviceURI) {
 		Log.info(String.format("Starting Discovery announcements on: %s for: %s -> %s\n", DISCOVERY_ADDR, serviceName,
 				serviceURI));
 
-		String serviceSplitter[] = serviceName.split("[.]");
-
-		var pktBytes = String.format("%s;%s%s%s", serviceSplitter[1], serviceSplitter[0], DELIMITER, serviceURI)
-				.getBytes();
+		var pktBytes = String.format("%s:%s%s%s", domainName, serviceName, DELIMITER, serviceURI).getBytes();
 		var pkt = new DatagramPacket(pktBytes, pktBytes.length, DISCOVERY_ADDR);
 
 		// start thread to send periodic announcements
@@ -114,30 +97,25 @@ class DiscoveryImpl implements Discovery {
 		}).start();
 	}
 
+
 	@Override
-	public URI[] knownUrisOf(String serviceName, int minEntries) {
-		if (listOfUris == null)
-			listOfUris = new HashMap<String, List<URI>>();
-		while (true) {
-			List<URI> l = listOfUris.get(serviceName);
-			if (l != null && l.size() >= minEntries)
-				return (URI[]) l.toArray(new URI[l.size()]);
-			else {
-				try {
-					Thread.sleep(DISCOVERY_RETRY_TIMEOUT);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+	public URI knownUrisOf(String domain, String serviceName) {
+		URI uri =  serviceMap.get(domain+":"+serviceName);
+		long time = System.currentTimeMillis();
+
+		while(uri == null && System.currentTimeMillis() - time < DISCOVERY_RETRY_TIMEOUT){
+			uri = serviceMap.get(serviceName);
 		}
+
+		if(uri == null) { Log.severe("Connection timeout. No URI found."); }
+
+		return uri;
 	}
 
 	private void startListener() {
 		Log.info(String.format("Starting discovery on multicast group: %s, port: %d\n", DISCOVERY_ADDR.getAddress(),
 				DISCOVERY_ADDR.getPort()));
 
-		if (listOfUris == null)
-			listOfUris = new HashMap<String, List<URI>>();
 		new Thread(() -> {
 			try (var ms = new MulticastSocket(DISCOVERY_ADDR.getPort())) {
 				ms.joinGroup(DISCOVERY_ADDR, NetworkInterface.getByInetAddress(InetAddress.getLocalHost()));
@@ -147,20 +125,15 @@ class DiscoveryImpl implements Discovery {
 						ms.receive(pkt);
 
 						var msg = new String(pkt.getData(), 0, pkt.getLength());
-						Log.info(String.format("Received: %s", msg));
+						//Log.info(String.format("Received: %s", msg));
 
 						var parts = msg.split(DELIMITER);
+
 						if (parts.length == 2) {
-							var aux = parts[0].split(";");
-							var serviceName = aux[1] + "." + aux[0];
+							var serviceName = parts[0];		// written as: domain:serviceName
 							var uri = URI.create(parts[1]);
-							List<URI> auxUri = listOfUris.get(serviceName);
-							if (auxUri == null) {
-								List<URI> addNewList = new ArrayList<URI>();
-								addNewList.add(uri);
-								listOfUris.put(serviceName, addNewList);
-							} else
-								auxUri.add(uri);
+
+							serviceMap.put(serviceName, uri);
 						}
 
 					} catch (Exception x) {

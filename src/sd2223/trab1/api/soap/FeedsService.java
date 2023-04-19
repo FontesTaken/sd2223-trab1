@@ -103,4 +103,11 @@ public interface FeedsService {
 	 */
 	@WebMethod
 	List<String> listSubs(String user) throws FeedsException;
+	
+	@WebMethod
+	void deleteFeed(String user) throws FeedsException;
+	
+	@WebMethod
+	List<Message> getMessagesFromRemote(String user, String origianlDomain, long time) throws FeedsException;
+	
 }

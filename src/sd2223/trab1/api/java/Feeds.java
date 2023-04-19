@@ -20,4 +20,8 @@ public interface Feeds {
 
 	Result<List<String>> listSubs(String user);
 
+	Result<Void> deleteFeed(String name);
+	
+	Result<List<Message>> getMessagesFromRemote(String user, String originalDomain, long time);
+
 }

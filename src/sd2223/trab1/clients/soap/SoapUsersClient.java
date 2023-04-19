@@ -54,6 +54,5 @@ public class SoapUsersClient extends SoapClient implements Users {
 	public Result<List<User>> searchUsers(String pattern) {
 		return super.reTry( () -> super.toJavaResult( () -> stub().searchUsers(pattern) ) );
 	}
-
 	
 }

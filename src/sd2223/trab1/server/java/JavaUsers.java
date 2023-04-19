@@ -7,15 +7,18 @@ import static sd2223.trab1.api.java.Result.ErrorCode.CONFLICT;
 import static sd2223.trab1.api.java.Result.ErrorCode.FORBIDDEN;
 import static sd2223.trab1.api.java.Result.ErrorCode.NOT_FOUND;
 
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import sd2223.trab1.api.Discovery;
 import sd2223.trab1.api.User;
 import sd2223.trab1.api.java.Result;
 import sd2223.trab1.api.java.Users;
+import sd2223.trab1.clients.FeedsClientFactory;
 import sd2223.trab1.server.rest.RestUserResource;
 
 public class JavaUsers implements Users {
@@ -132,6 +135,11 @@ public class JavaUsers implements Users {
 
 		// If it exists then we remove it from the map
 		user = users.remove(name);
+		
+		URI domainURI = Discovery.getInstance().knownUrisOf(user.getDomain(), "feeds");
+		var client = FeedsClientFactory.get(domainURI);
+		client.deleteFeed(user.getName() + "@" + user.getDomain());
+		
 
 		return ok(user);
 	}
@@ -143,11 +151,15 @@ public class JavaUsers implements Users {
 			Log.info("Please, input a valid pattern");
 			return error(BAD_REQUEST);
 		}
+		if (pattern.equals("")) {
+			return Result.ok((List<User>) users.values());
+		}
+
 
 		List<User> listToReturn = new LinkedList<User>();
 
 		for (User entry : users.values()) {
-			if (entry.getDisplayName().toUpperCase().contains(pattern.toUpperCase())) {
+			if (entry.getName().toUpperCase().contains(pattern.toUpperCase())) {
 				User newUser = entry.clone();
 				newUser.setPwd("");
 				listToReturn.add(newUser);
