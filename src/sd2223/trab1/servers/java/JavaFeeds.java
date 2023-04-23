@@ -1,14 +1,12 @@
-package sd2223.trab1.server.java;
+package sd2223.trab1.servers.java;
 
-import sd2223.trab1.api.Discovery;
 import sd2223.trab1.api.Message;
+import sd2223.trab1.api.PersonalFeed;
 import sd2223.trab1.api.java.Feeds;
-import sd2223.trab1.api.java.PersonalFeed;
 import sd2223.trab1.api.java.Result;
 import sd2223.trab1.clients.FeedsClientFactory;
 import sd2223.trab1.clients.UsersClientFactory;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,8 +35,7 @@ public class JavaFeeds implements Feeds {
 		}
 
 		// Check if user exists in domain or if password is correct
-		URI domainURI = Discovery.getInstance().knownUrisOf(domain,"users");
-		var client = UsersClientFactory.get(domainURI);
+		var client = UsersClientFactory.get(domain);
 		var result = client.getUser(user, pwd);
 		if (!result.isOK()) {
 			return Result.error(result.error());
@@ -63,8 +60,7 @@ public class JavaFeeds implements Feeds {
 		}
 
 		// Check if user exists in domain or if password is correct
-		URI domainURI = Discovery.getInstance().knownUrisOf(domain,"users");
-		var client = UsersClientFactory.get(domainURI);
+		var client = UsersClientFactory.get(domain);
 		var result = client.getUser(user, pwd);
 		if (!result.isOK()) {
 			return Result.error(result.error());
@@ -90,14 +86,12 @@ public class JavaFeeds implements Feeds {
 		// Check user is remote
 		String domain = user.split("@")[1];
 		if (!domain.equals(this.domain)) {
-			URI domainURI = Discovery.getInstance().knownUrisOf(domain, "feeds");
-			var client = FeedsClientFactory.get(domainURI);
+			var client = FeedsClientFactory.get(domain);
 			return client.getMessage(user, mid);
 		}
 
 		// User is local
-		URI domainURI = Discovery.getInstance().knownUrisOf(domain,"users");
-		var client = UsersClientFactory.get(domainURI);
+		var client = UsersClientFactory.get(domain);
 		var result = client.getUser(user, ""); // Basta saber se o user existe, não precisamos de dar uma pwd "correta"
 		if (!result.isOK()) {
 			if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
@@ -122,8 +116,7 @@ public class JavaFeeds implements Feeds {
 
 				} else {
 					// Remote domain propagation
-					URI domainURIRemote = Discovery.getInstance().knownUrisOf(user_domain[1], "feeds");
-					var clientRemote = FeedsClientFactory.get(domainURIRemote);
+					var clientRemote = FeedsClientFactory.get(user_domain[1]);
 					var resultRemote = clientRemote.getMessage(u, mid);
 
 					if (!resultRemote.isOK()) {
@@ -137,7 +130,7 @@ public class JavaFeeds implements Feeds {
 					break;
 				}
 			}
-		} // Propagate to get message...
+		} 
 
 		// Check if message exists
 		if (message == null) {
@@ -151,14 +144,12 @@ public class JavaFeeds implements Feeds {
 		// Check user is remote
 		String domain = user.split("@")[1];
 		if (!domain.equals(this.domain)) {
-			URI domainURI = Discovery.getInstance().knownUrisOf(domain, "feeds");
-			var client = FeedsClientFactory.get(domainURI);
+			var client = FeedsClientFactory.get(domain);
 			return client.getMessages(user, time);
 		}
 
 		// User is local. Check user exists
-		URI domainURI = Discovery.getInstance().knownUrisOf(domain,"users");
-		var client = UsersClientFactory.get(domainURI);
+		var client = UsersClientFactory.get(domain);
 		var result = client.getUser(user, "");
 		if (!result.isOK()) {
 			if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
@@ -185,8 +176,7 @@ public class JavaFeeds implements Feeds {
 				}
 			} else {
 				// Remote domain propagation
-				URI domainURIRemote = Discovery.getInstance().knownUrisOf(user_domain[1],"feeds");
-				var clientRemote = FeedsClientFactory.get(domainURIRemote);
+				var clientRemote = FeedsClientFactory.get(user_domain[1]);
 				var resultRemote = clientRemote.getMessagesFromRemote(u, user_domain[1], time);
 
 				if (!result.isOK()) {
@@ -204,8 +194,7 @@ public class JavaFeeds implements Feeds {
 	@Override
 	public Result<List<Message>> getMessagesFromRemote(String user, String originalDomain, long time) {
 		// Check if user exists in domain or if password is correct
-		URI domainURI = Discovery.getInstance().knownUrisOf(domain,"users");
-		var client = UsersClientFactory.get(domainURI);
+		var client = UsersClientFactory.get(domain);
 		var result = client.getUser(user, ""); // Basta saber se o user existe, não precisamos de dar uma pwd "correta"
 		if (!result.isOK()) {
 			if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
@@ -237,8 +226,7 @@ public class JavaFeeds implements Feeds {
 		}
 
 		// Check if user exists in domain or if password is correct
-		URI domainURI = Discovery.getInstance().knownUrisOf(domain,"users");
-		var client = UsersClientFactory.get(domainURI);
+		var client = UsersClientFactory.get(domain);
 		var result = client.getUser(user, pwd);
 		if (!result.isOK()) {
 			return Result.error(result.error());
@@ -261,8 +249,7 @@ public class JavaFeeds implements Feeds {
 		}
 
 		// Check if user exists in domain or if password is correct
-		URI domainURI = Discovery.getInstance().knownUrisOf(domain,"users");
-		var client = UsersClientFactory.get(domainURI);
+		var client = UsersClientFactory.get(domain);
 		var result = client.getUser(user, pwd);
 		if (!result.isOK()) {
 			return Result.error(result.error());
@@ -280,8 +267,7 @@ public class JavaFeeds implements Feeds {
 	@Override
 	public Result<List<String>> listSubs(String user) {
 		// Check if user data is valid
-		URI domainURI = Discovery.getInstance().knownUrisOf(domain,"users");
-		var client = UsersClientFactory.get(domainURI);
+		var client = UsersClientFactory.get(domain);
 		var result = client.getUser(user, "");
 		if (!result.isOK()) {
 			if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {
@@ -300,8 +286,7 @@ public class JavaFeeds implements Feeds {
 
 	@Override
 	public Result<Void> deleteFeed(String user) {
-		URI domainURI = Discovery.getInstance().knownUrisOf(domain,"users");
-		var client = UsersClientFactory.get(domainURI);
+		var client = UsersClientFactory.get(domain);
 		var result = client.getUser(user, "");
 		if (!result.isOK()) {
 			if (result.error().equals(Result.ErrorCode.NOT_FOUND)) {

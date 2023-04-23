@@ -1,4 +1,4 @@
-package sd2223.trab1.server.java;
+package sd2223.trab1.servers.java;
 
 import static sd2223.trab1.api.java.Result.error;
 import static sd2223.trab1.api.java.Result.ok;
@@ -19,14 +19,14 @@ import sd2223.trab1.api.User;
 import sd2223.trab1.api.java.Result;
 import sd2223.trab1.api.java.Users;
 import sd2223.trab1.clients.FeedsClientFactory;
-import sd2223.trab1.server.rest.RestUserResource;
+import sd2223.trab1.servers.rest.RestUsersResource;
 
 public class JavaUsers implements Users {
 	
 
 	private final Map<String, User> users = new ConcurrentHashMap<>();
 
-	private static Logger Log = Logger.getLogger(RestUserResource.class.getName());
+	private static Logger Log = Logger.getLogger(RestUsersResource.class.getName());
 
 	public JavaUsers() {
 		
@@ -99,15 +99,15 @@ public class JavaUsers implements Users {
 		}
 
 		// If it exists then update the user information with the new one
-		user.setName(oldUser.getName());
-		if (user.getPwd() == null)
-			user.setPwd(oldUser.getPwd());
-		if (user.getDisplayName() == null)
-			user.setDisplayName(oldUser.getDisplayName());
-		user.setDomain(oldUser.getDomain());
-		users.put(name, user);
+		User u = users.computeIfPresent(name, (key, userToUpdate) -> {
+			if (user.getPwd() != null)
+				userToUpdate.setPwd(user.getPwd());
+			if (user.getDisplayName() != null)
+				userToUpdate.setDisplayName(user.getDisplayName());
+			return userToUpdate;
+		});
 
-		return ok(user);		
+		return ok(u);		
 	}
 
 	@Override
@@ -136,8 +136,7 @@ public class JavaUsers implements Users {
 		// If it exists then we remove it from the map
 		user = users.remove(name);
 		
-		URI domainURI = Discovery.getInstance().knownUrisOf(user.getDomain(), "feeds");
-		var client = FeedsClientFactory.get(domainURI);
+		var client = FeedsClientFactory.get(user.getDomain());
 		client.deleteFeed(user.getName() + "@" + user.getDomain());
 		
 

@@ -1,23 +1,24 @@
-package sd2223.trab1.server.rest;
+package sd2223.trab1.servers.rest;
 
+import jakarta.inject.Singleton;
 import sd2223.trab1.api.Message;
 import sd2223.trab1.api.java.Feeds;
 import sd2223.trab1.api.rest.FeedsService;
-import sd2223.trab1.server.java.JavaFeeds;
+import sd2223.trab1.servers.java.JavaFeeds;
 
 import java.util.List;
 
+@Singleton
 public class RestFeedsResource extends RestResource implements FeedsService {
-
     final Feeds impl;
 
-    public RestFeedsResource(String domain, long serverId) {
-        this.impl = new JavaFeeds(domain, serverId);
+    public RestFeedsResource(String domain, long base) {
+        this.impl = new JavaFeeds(domain, base);
     }
 
     @Override
     public long postMessage(String user, String pwd, Message msg) {
-        return super.fromJavaResult(impl.postMessage(user, pwd, msg));
+        return super.fromJavaResult(impl.postMessage( user, pwd, msg));
     }
 
     @Override
@@ -36,6 +37,11 @@ public class RestFeedsResource extends RestResource implements FeedsService {
     }
 
     @Override
+    public List<Message> getMessagesFromRemote(String user, String originalDomain, long time) {
+        return super.fromJavaResult(impl.getMessagesFromRemote(user, originalDomain, time));
+    }
+
+    @Override
     public void subUser(String user, String userSub, String pwd) {
         super.fromJavaResult(impl.subUser(user, userSub, pwd));
     }
@@ -46,18 +52,12 @@ public class RestFeedsResource extends RestResource implements FeedsService {
     }
 
     @Override
+    public void deleteFeed(String name) {
+        super.fromJavaResult(impl.deleteFeed(name));
+    }
+
+    @Override
     public List<String> listSubs(String user) {
         return super.fromJavaResult(impl.listSubs(user));
     }
-
-	@Override
-	public void deleteFeed(String user) {
-		super.fromJavaResult(impl.deleteFeed(user));
-	}
-
-	@Override
-	public List<Message> getMessagesFromRemote(String user, String domain, long time) {
-		return super.fromJavaResult(impl.getMessagesFromRemote(user, domain, time));
-
-	}
 }

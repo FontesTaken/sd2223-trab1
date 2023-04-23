@@ -25,7 +25,7 @@ public interface Discovery {
 	 * @param domain - domain of the server
 	 * @return array with the discovered URIs for the given service name.
 	 */
-	public URI knownUrisOf(String serviceName, String domain);
+	public URI knownUrisOf(String domain, String serviceName);
 
 
 	/**

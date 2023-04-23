@@ -110,6 +110,4 @@ public class RestClient {
 			e.printStackTrace();
 		}
 	}
-
-	
 }
